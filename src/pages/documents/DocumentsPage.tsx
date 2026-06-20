@@ -1,17 +1,22 @@
-import React from 'react';
-import { FileText, Upload, Download, Trash2, Share2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { FileText, Upload, Download, Trash2, Share2, Eye, PenTool } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { ChamberDocument } from '../../types/documents';
+import { StatusBadge } from '../../components/documents/StatusBadge';
+import { PreviewModal } from '../../components/documents/PreviewModal';
+import { SignatureModal } from '../../components/documents/SignatureModal';
 
-const documents = [
+const initialDocuments: ChamberDocument[] = [
   {
     id: 1,
     name: 'Pitch Deck 2024.pdf',
     type: 'PDF',
     size: '2.4 MB',
     lastModified: '2024-02-15',
-    shared: true
+    shared: true,
+    status: 'signed',
   },
   {
     id: 2,
@@ -19,7 +24,8 @@ const documents = [
     type: 'Spreadsheet',
     size: '1.8 MB',
     lastModified: '2024-02-10',
-    shared: false
+    shared: false,
+    status: 'in_review',
   },
   {
     id: 3,
@@ -27,7 +33,8 @@ const documents = [
     type: 'Document',
     size: '3.2 MB',
     lastModified: '2024-02-05',
-    shared: true
+    shared: true,
+    status: 'draft',
   },
   {
     id: 4,
@@ -35,11 +42,56 @@ const documents = [
     type: 'PDF',
     size: '5.1 MB',
     lastModified: '2024-01-28',
-    shared: false
-  }
+    shared: false,
+    status: 'in_review',
+  },
 ];
 
 export const DocumentsPage: React.FC = () => {
+  const [documents, setDocuments] = useState<ChamberDocument[]>(initialDocuments);
+  const [previewDoc, setPreviewDoc] = useState<ChamberDocument | null>(null);
+  const [signingDoc, setSigningDoc] = useState<ChamberDocument | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
+    const newDoc: ChamberDocument = {
+      id: Date.now(),
+      name: file.name,
+      type: file.type.includes('pdf') ? 'PDF' : file.name.split('.').pop()?.toUpperCase() || 'File',
+      size: `${sizeInMb} MB`,
+      lastModified: new Date().toISOString().split('T')[0],
+      shared: false,
+      status: 'draft',
+    };
+
+    setDocuments([newDoc, ...documents]);
+    e.target.value = '';
+  };
+
+  const handleDelete = (id: number) => {
+    setDocuments(documents.filter((doc) => doc.id !== id));
+  };
+
+  const handleSignComplete = (signatureDataUrl: string) => {
+    if (!signingDoc) return;
+    setDocuments(
+      documents.map((doc) =>
+        doc.id === signingDoc.id
+          ? { ...doc, status: 'signed' as const, signatureDataUrl }
+          : doc
+      )
+    );
+    setSigningDoc(null);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -47,12 +99,18 @@ export const DocumentsPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
           <p className="text-gray-600">Manage your startup's important files</p>
         </div>
-        
-        <Button leftIcon={<Upload size={18} />}>
+
+        <Button leftIcon={<Upload size={18} />} onClick={handleUploadClick}>
           Upload Document
         </Button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelected}
+          className="hidden"
+        />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Storage info */}
         <Card className="lg:col-span-1">
@@ -73,27 +131,33 @@ export const DocumentsPage: React.FC = () => {
                 <span className="font-medium text-gray-900">7.5 GB</span>
               </div>
             </div>
-            
+
             <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Quick Access</h3>
-              <div className="space-y-2">
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                  Recent Files
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                  Shared with Me
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                  Starred
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                  Trash
-                </button>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">Status Overview</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Draft</span>
+                  <span className="font-medium text-gray-900">
+                    {documents.filter((d) => d.status === 'draft').length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">In Review</span>
+                  <span className="font-medium text-gray-900">
+                    {documents.filter((d) => d.status === 'in_review').length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Signed</span>
+                  <span className="font-medium text-gray-900">
+                    {documents.filter((d) => d.status === 'signed').length}
+                  </span>
+                </div>
               </div>
             </div>
           </CardBody>
         </Card>
-        
+
         {/* Document list */}
         <div className="lg:col-span-3">
           <Card>
@@ -109,68 +173,110 @@ export const DocumentsPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardBody>
-              <div className="space-y-2">
-                {documents.map(doc => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                  >
-                    <div className="p-2 bg-primary-50 rounded-lg mr-4">
-                      <FileText size={24} className="text-primary-600" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-medium text-gray-900 truncate">
-                          {doc.name}
-                        </h3>
-                        {doc.shared && (
-                          <Badge variant="secondary" size="sm">Shared</Badge>
+              {documents.length === 0 ? (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                  No documents yet. Click "Upload Document" to add one.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                    >
+                      <div className="p-2 bg-primary-50 rounded-lg mr-4">
+                        <FileText size={24} className="text-primary-600" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm font-medium text-gray-900 truncate">
+                            {doc.name}
+                          </h3>
+                          {doc.shared && (
+                            <Badge variant="secondary" size="sm">Shared</Badge>
+                          )}
+                          <StatusBadge status={doc.status} />
+                        </div>
+
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                          <span>{doc.type}</span>
+                          <span>{doc.size}</span>
+                          <span>Modified {doc.lastModified}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 ml-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-2"
+                          aria-label="Preview"
+                          onClick={() => setPreviewDoc(doc)}
+                        >
+                          <Eye size={18} />
+                        </Button>
+
+                        {doc.status !== 'signed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-2 text-accent-600 hover:text-accent-700"
+                            aria-label="Sign"
+                            onClick={() => setSigningDoc(doc)}
+                          >
+                            <PenTool size={18} />
+                          </Button>
                         )}
-                      </div>
-                      
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                        <span>{doc.type}</span>
-                        <span>{doc.size}</span>
-                        <span>Modified {doc.lastModified}</span>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-2"
+                          aria-label="Download"
+                        >
+                          <Download size={18} />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-2"
+                          aria-label="Share"
+                        >
+                          <Share2 size={18} />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-2 text-error-600 hover:text-error-700"
+                          aria-label="Delete"
+                          onClick={() => handleDelete(doc.id)}
+                        >
+                          <Trash2 size={18} />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-2"
-                        aria-label="Download"
-                      >
-                        <Download size={18} />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-2"
-                        aria-label="Share"
-                      >
-                        <Share2 size={18} />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-2 text-error-600 hover:text-error-700"
-                        aria-label="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardBody>
           </Card>
         </div>
       </div>
+
+      {/* Modals */}
+      {previewDoc && (
+        <PreviewModal document={previewDoc} onClose={() => setPreviewDoc(null)} />
+      )}
+      {signingDoc && (
+        <SignatureModal
+          documentName={signingDoc.name}
+          onClose={() => setSigningDoc(null)}
+          onSign={handleSignComplete}
+        />
+      )}
     </div>
   );
 };
