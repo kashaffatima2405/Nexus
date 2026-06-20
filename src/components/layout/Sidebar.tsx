@@ -10,14 +10,15 @@ interface SidebarItemProps {
   to: string;
   icon: React.ReactNode;
   text: string;
+  className?: string;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, text }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, text, className }) => {
   return (
     <NavLink
       to={to}
       className={({ isActive }) => 
-        `flex items-center py-2.5 px-4 rounded-md transition-colors duration-200 ${
+        `${className || ''} flex items-center py-2.5 px-4 rounded-md transition-colors duration-200 ${
           isActive 
             ? 'bg-primary-50 text-primary-700' 
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -37,27 +38,27 @@ export const Sidebar: React.FC = () => {
   
   // Define sidebar items based on user role
   const entrepreneurItems = [
-    { to: '/dashboard/entrepreneur', icon: <Home size={20} />, text: 'Dashboard' },
+    { to: '/dashboard/entrepreneur', icon: <Home size={20} />, text: 'Dashboard', className: 'joyride-dashboard' },
     { to: '/profile/entrepreneur/' + user.id, icon: <Building2 size={20} />, text: 'My Startup' },
     { to: '/investors', icon: <CircleDollarSign size={20} />, text: 'Find Investors' },
-    { to: '/scheduling', icon: <Calendar size={20} />, text: 'Scheduling' },
+    { to: '/scheduling', icon: <Calendar size={20} />, text: 'Scheduling', className: 'joyride-scheduling' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
-    { to: '/documents', icon: <FileText size={20} />, text: 'Documents' },
-    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call' },
-    { to: '/wallet', icon: <Wallet size={20} />, text: 'Wallet' },
+    { to: '/documents', icon: <FileText size={20} />, text: 'Documents', className: 'joyride-documents' },
+    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call', className: 'joyride-video-call' },
+    { to: '/wallet', icon: <Wallet size={20} />, text: 'Wallet', className: 'joyride-wallet' },
   ];
   
   const investorItems = [
-    { to: '/dashboard/investor', icon: <Home size={20} />, text: 'Dashboard' },
+    { to: '/dashboard/investor', icon: <Home size={20} />, text: 'Dashboard', className: 'joyride-dashboard' },
     { to: '/profile/investor/' + user.id, icon: <CircleDollarSign size={20} />, text: 'My Portfolio' },
     { to: '/entrepreneurs', icon: <Users size={20} />, text: 'Find Startups' },
-    { to: '/scheduling', icon: <Calendar size={20} />, text: 'Scheduling' },
+    { to: '/scheduling', icon: <Calendar size={20} />, text: 'Scheduling', className: 'joyride-scheduling' },
     { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
     { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
-    { to: '/deals', icon: <FileText size={20} />, text: 'Deals' },
-    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call' },
-    { to: '/wallet', icon: <Wallet size={20} />, text: 'Wallet' },
+    { to: '/deals', icon: <FileText size={20} />, text: 'Deals', className: 'joyride-documents' },
+    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call', className: 'joyride-video-call' },
+    { to: '/wallet', icon: <Wallet size={20} />, text: 'Wallet', className: 'joyride-wallet' },
   ];
   
   const sidebarItems = user.role === 'entrepreneur' ? entrepreneurItems : investorItems;
@@ -79,6 +80,7 @@ export const Sidebar: React.FC = () => {
                 to={item.to}
                 icon={item.icon}
                 text={item.text}
+                className={item.className}
               />
             ))}
           </div>
