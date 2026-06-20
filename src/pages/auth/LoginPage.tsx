@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { UserRole } from '../../types';
+import { OtpVerification } from '../../components/security/OtpVerification';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,25 +13,35 @@ export const LoginPage: React.FC = () => {
   const [role, setRole] = useState<UserRole>('entrepreneur');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [showOtp, setShowOtp] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     try {
       await login(email, password, role);
-      // Redirect based on user role
-      navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+      // Instead of navigating immediately, show the 2FA step first
+      setIsLoading(false);
+      setShowOtp(true);
     } catch (err) {
       setError((err as Error).message);
       setIsLoading(false);
     }
   };
-  
+
+  const handleOtpVerified = () => {
+    navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+  };
+
+  const handleOtpCancel = () => {
+    setShowOtp(false);
+  };
+
   // For demo purposes, pre-filled credentials
   const fillDemoCredentials = (userRole: UserRole) => {
     if (userRole === 'entrepreneur') {
@@ -42,7 +53,17 @@ export const LoginPage: React.FC = () => {
     }
     setRole(userRole);
   };
-  
+
+  if (showOtp) {
+    return (
+      <OtpVerification
+        email={email || 'your registered email'}
+        onVerified={handleOtpVerified}
+        onCancel={handleOtpCancel}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
