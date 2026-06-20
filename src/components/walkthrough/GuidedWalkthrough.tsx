@@ -78,7 +78,7 @@ export const GuidedWalkthrough: React.FC = () => {
   useEffect(() => {
     const completed = localStorage.getItem(STORAGE_KEY);
     if (!completed && user) {
-      const timer = setTimeout(() => setIsActive(true), 600);
+     const timer = setTimeout(() => setIsActive(true), 1500);
       return () => clearTimeout(timer);
     }
   }, [user]);
