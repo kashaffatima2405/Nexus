@@ -1,0 +1,56 @@
+/* Custom styling for react-calendar to match Nexus blue theme */
+.nexus-calendar {
+  width: 100%;
+  border: none;
+  font-family: inherit;
+}
+
+.nexus-calendar .react-calendar__navigation button {
+  color: #1D4ED8;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.nexus-calendar .react-calendar__navigation button:hover,
+.nexus-calendar .react-calendar__navigation button:focus {
+  background-color: #EFF6FF;
+  border-radius: 6px;
+}
+
+.nexus-calendar .react-calendar__month-view__weekdays {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+}
+
+.nexus-calendar .react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+}
+
+.nexus-calendar .react-calendar__tile {
+  border-radius: 6px;
+  padding: 0.6em 0.5em;
+  font-size: 0.875rem;
+}
+
+.nexus-calendar .react-calendar__tile:enabled:hover,
+.nexus-calendar .react-calendar__tile:enabled:focus {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.nexus-calendar .react-calendar__tile--active {
+  background: #2563EB !important;
+  color: white;
+}
+
+.nexus-calendar .react-calendar__tile--now {
+  background: #FFFBEB;
+  color: #B45309;
+  font-weight: 600;
+}
+
+.nexus-calendar .react-calendar__tile--now:hover {
+  background: #FDE68A;
+}
