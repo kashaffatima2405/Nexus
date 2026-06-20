@@ -27,6 +27,7 @@ import { SettingsPage } from './pages/settings/SettingsPage';
 import { HelpPage } from './pages/help/HelpPage';
 import { SchedulingPage } from './pages/scheduling/SchedulingPage';
 import { DealsPage } from './pages/deals/DealsPage';
+import { VideoCallPage } from './pages/chat/VideoCallPage';
 
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
@@ -82,6 +83,9 @@ function App() {
           </Route>
           <Route path="/deals" element={<DashboardLayout />}>
             <Route index element={<DealsPage />} />
+          </Route>
+          <Route path="/video-call" element={<DashboardLayout />}>
+            <Route index element={<VideoCallPage />} />
           </Route>
 
           <Route path="/scheduling" element={<DashboardLayout />}>
